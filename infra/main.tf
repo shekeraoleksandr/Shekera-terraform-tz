@@ -13,6 +13,15 @@ resource "aws_security_group" "server_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+# Step 6: Allow Tomcat access
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Tomcat web access"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -58,7 +67,7 @@ resource "aws_security_group" "db_sg" {
 
 resource "aws_instance" "server" {
   ami                         = "ami-0b6c6ebed2801a5cb"
-  instance_type               = "t3.micro"
+  instance_type               = "t3.small"
   key_name                    = aws_key_pair.deployer.key_name
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.server_sg.id]
@@ -72,7 +81,7 @@ resource "aws_instance" "db" {
   ami                         = "ami-0b6c6ebed2801a5cb"
   instance_type               = "t3.micro"
   key_name                    = aws_key_pair.deployer.key_name
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.db_sg.id]
 
   tags = {
