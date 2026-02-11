@@ -35,6 +35,15 @@ resource "aws_security_group" "db_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+# Step 5: Allow inbound from Server Instance
+  ingress {
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.server_sg.id]
+    description     = "MySQL access from web server"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
