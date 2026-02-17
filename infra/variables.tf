@@ -9,3 +9,9 @@ variable "SECRET_KEY" {
   type        = string
   sensitive   = true
 }
+
+variable "SSH_IP" {
+  description = "CIDR blocks allowed to access the SSH port"
+  type        = string
+  sensitive   = true
+}

@@ -3,88 +3,26 @@ resource "aws_key_pair" "deployer" {
   public_key = file("~/.ssh/id_ed25519.pub")
 }
 
-resource "aws_security_group" "server_sg" {
-  name = "server-security-group"
+module "server" {
+  source = "./modules/ec2"
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-# Step 6: Allow Tomcat access
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Tomcat web access"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "server-sg"
-  }
+  name                         = "Server"
+  instance_type                = "t3.small"
+  key_name                     = aws_key_pair.deployer.key_name
+  associate_public_ip_address  = true
+  allowed_ssh_cidr_blocks      = [var.SSH_IP]
+  app_port                     = 8080
+  allowed_app_port_cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group" "db_sg" {
-  name = "db-security-group"
+module "db" {
+  source = "./modules/ec2"
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-# Step 5: Allow inbound from Server Instance
-  ingress {
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.server_sg.id]
-    description     = "MySQL access from web server"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "db-sg"
-  }
-}
-
-resource "aws_instance" "server" {
-  ami                         = "ami-0b6c6ebed2801a5cb"
-  instance_type               = "t3.small"
-  key_name                    = aws_key_pair.deployer.key_name
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.server_sg.id]
-
-  tags = {
-    Name = "Server"
-  }
-}
-
-resource "aws_instance" "db" {
-  ami                         = "ami-0b6c6ebed2801a5cb"
-  instance_type               = "t3.micro"
-  key_name                    = aws_key_pair.deployer.key_name
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.db_sg.id]
-
-  tags = {
-    Name = "DB"
-  }
+  name                         = "DB"
+  instance_type                = "t3.micro"
+  key_name                     = aws_key_pair.deployer.key_name
+  associate_public_ip_address  = true
+  allowed_ssh_cidr_blocks      = [var.SSH_IP]
+  app_port                     = 3306
+  allowed_app_port_cidr_blocks = ["0.0.0.0/0"]
 }
