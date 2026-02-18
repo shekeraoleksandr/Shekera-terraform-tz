@@ -6,6 +6,7 @@ resource "aws_security_group" "ec2" {
   }
 }
 
+# Allow SSH only from the specified CIDR blocks, skipped if none provided
 resource "aws_security_group_rule" "ssh_ingress" {
   count             = length(var.allowed_ssh_cidr_blocks) > 0 ? 1 : 0
   type              = "ingress"
@@ -17,6 +18,7 @@ resource "aws_security_group_rule" "ssh_ingress" {
   description       = "Allow SSH access"
 }
 
+# Allow inbound traffic on the application port, skipped if app_port is 0
 resource "aws_security_group_rule" "app_port_ingress" {
   count             = var.app_port > 0 ? 1 : 0
   type              = "ingress"
@@ -28,6 +30,7 @@ resource "aws_security_group_rule" "app_port_ingress" {
   description       = "Allow application traffic on port ${var.app_port}"
 }
 
+# Allow all outbound traffic
 resource "aws_security_group_rule" "egress" {
   type              = "egress"
   from_port         = 0
@@ -37,4 +40,3 @@ resource "aws_security_group_rule" "egress" {
   cidr_blocks       = ["0.0.0.0/0"]
   description       = "Allow all outbound traffic"
 }
-

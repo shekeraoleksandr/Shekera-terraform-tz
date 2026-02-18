@@ -1,3 +1,4 @@
+# EC2 instance using the latest Ubuntu AMI and the security group defined in security_groups.tf
 resource "aws_instance" "this" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
